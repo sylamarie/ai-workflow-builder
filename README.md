@@ -3,7 +3,7 @@
 A simplified workflow-automation builder (a mini n8n/Zapier) — build visual workflows where a
 trigger flows through steps, including a real AI classification step, to produce a result.
 
-**Live demo:** https://frontend-six-sigma-46x0xbc3d3.vercel.app
+**Live demo:** https://ai-workflow-builder-sylamarie.vercel.app
 **Repo:** https://github.com/sylamarie/ai-workflow-builder
 
 > Note: the backend runs on a free hosting tier that sleeps after 15 minutes of inactivity. The
