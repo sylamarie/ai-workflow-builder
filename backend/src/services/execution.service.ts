@@ -1,3 +1,4 @@
+import { classifyText } from "../ai/groqClient.js";
 import { HttpError } from "../middleware/errorHandler.js";
 import type { RunResult, StepContext, StepHandler, StepLogEntry } from "../types/workflow.types.js";
 import { getWorkflow } from "./workflow.service.js";
@@ -13,13 +14,23 @@ const stepHandlers: Record<string, StepHandler> = {
     await new Promise((resolve) => setTimeout(resolve, ms));
     return { waitedMs: ms };
   },
+  "action.ai_classify": async (config, context) => {
+    const text = (context.text as string | undefined) ?? (config.text as string | undefined) ?? "";
+    const categories = (config.categories as string[] | undefined) ?? ["positive", "negative", "neutral"];
+    const classification = await classifyText(text, categories);
+    context.classification = classification;
+    return { text, categories, classification };
+  },
 };
 
 export function registerStepHandler(type: string, handler: StepHandler): void {
   stepHandlers[type] = handler;
 }
 
-export async function runWorkflow(workflowId: string): Promise<RunResult> {
+export async function runWorkflow(
+  workflowId: string,
+  initialContext: StepContext = {},
+): Promise<RunResult> {
   const { nodes, edges } = await getWorkflow(workflowId);
 
   const nodeById = new Map(nodes.map((node) => [node.id, node]));
@@ -31,7 +42,7 @@ export async function runWorkflow(workflowId: string): Promise<RunResult> {
   }
 
   const steps: StepLogEntry[] = [];
-  const context: StepContext = {};
+  const context: StepContext = { ...initialContext };
   const now = () => new Date().toISOString();
 
   steps.push({

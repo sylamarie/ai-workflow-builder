@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import * as executionService from "../services/execution.service.js";
 import * as workflowService from "../services/workflow.service.js";
+import { HttpError } from "../middleware/errorHandler.js";
 
 function asyncHandler(fn: (req: Request, res: Response) => Promise<void>) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -35,5 +36,17 @@ export const addEdge = asyncHandler(async (req, res) => {
 
 export const runWorkflow = asyncHandler(async (req, res) => {
   const result = await executionService.runWorkflow(req.params.id as string);
+  res.status(200).json(result);
+});
+
+export const runWebhook = asyncHandler(async (req, res) => {
+  const providedSecret = req.header("X-Webhook-Secret");
+  const expectedSecret = process.env.WEBHOOK_SECRET;
+
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    throw new HttpError(401, "Invalid or missing X-Webhook-Secret header");
+  }
+
+  const result = await executionService.runWorkflow(req.params.id as string, req.body);
   res.status(200).json(result);
 });
