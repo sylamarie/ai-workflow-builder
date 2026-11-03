@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { NEO4J_DATABASE, driver } from "../db/driver.js";
+import { driver } from "../db/driver.js";
 import { HttpError } from "../middleware/errorHandler.js";
 import type {
   CreateEdgeInput,
@@ -44,7 +44,6 @@ export async function createWorkflow(input: CreateWorkflowInput): Promise<Workfl
     `CREATE (w:Workflow { id: $id, name: $name, createdAt: $now, updatedAt: $now })
      RETURN w`,
     { id, name: input.name, now },
-    { database: NEO4J_DATABASE },
   );
 
   return toWorkflow(records[0].get("w").properties);
@@ -57,7 +56,6 @@ export async function listWorkflows(): Promise<WorkflowSummary[]> {
      RETURN w, count(n) AS nodeCount
      ORDER BY w.updatedAt DESC`,
     {},
-    { database: NEO4J_DATABASE },
   );
 
   return records.map((record) => ({
@@ -70,7 +68,6 @@ async function findWorkflowOrThrow(workflowId: string): Promise<Workflow> {
   const { records } = await driver.executeQuery(
     `MATCH (w:Workflow { id: $workflowId }) RETURN w`,
     { workflowId },
-    { database: NEO4J_DATABASE },
   );
 
   if (records.length === 0) {
@@ -87,7 +84,6 @@ export async function getWorkflow(workflowId: string): Promise<WorkflowDetail> {
     `MATCH (:Workflow { id: $workflowId })-[:HAS_NODE]->(n:WorkflowNode)
      RETURN n`,
     { workflowId },
-    { database: NEO4J_DATABASE },
   );
   const nodes = nodesResult.records.map((record) => toWorkflowNode(record.get("n").properties));
 
@@ -95,7 +91,6 @@ export async function getWorkflow(workflowId: string): Promise<WorkflowDetail> {
     `MATCH (:Workflow { id: $workflowId })-[:HAS_NODE]->(a:WorkflowNode)-[:NEXT]->(b:WorkflowNode)
      RETURN a.id AS source, b.id AS target`,
     { workflowId },
-    { database: NEO4J_DATABASE },
   );
   const edges: WorkflowEdge[] = edgesResult.records.map((record) => ({
     source: record.get("source") as string,
@@ -132,7 +127,6 @@ export async function addNode(workflowId: string, input: CreateNodeInput): Promi
       positionY: input.position.y,
       now,
     },
-    { database: NEO4J_DATABASE },
   );
 
   return toWorkflowNode(records[0].get("n").properties);
@@ -155,7 +149,6 @@ export async function addEdge(workflowId: string, input: CreateEdgeInput): Promi
       targetId: input.targetId,
       now: new Date().toISOString(),
     },
-    { database: NEO4J_DATABASE },
   );
 
   if (records.length === 0) {

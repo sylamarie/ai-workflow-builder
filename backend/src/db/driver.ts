@@ -10,8 +10,6 @@ if (!uri || !user || !password) {
 
 export const driver: Driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
 
-export const NEO4J_DATABASE = "neo4j";
-
 export async function verifyNeo4jConnection(): Promise<void> {
   await driver.verifyConnectivity();
 }
