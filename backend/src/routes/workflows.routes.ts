@@ -8,5 +8,6 @@ workflowsRouter.get("/", controller.listWorkflows);
 workflowsRouter.get("/:id", controller.getWorkflow);
 workflowsRouter.post("/:id/nodes", controller.addNode);
 workflowsRouter.post("/:id/edges", controller.addEdge);
+workflowsRouter.patch("/:id/nodes/:nodeId", controller.updateNodePosition);
 workflowsRouter.post("/:id/run", controller.runWorkflow);
 workflowsRouter.post("/:id/webhook", controller.runWebhook);

@@ -5,6 +5,7 @@ import type {
   CreateEdgeInput,
   CreateNodeInput,
   CreateWorkflowInput,
+  UpdateNodePositionInput,
   Workflow,
   WorkflowDetail,
   WorkflowEdge,
@@ -159,4 +160,28 @@ export async function addEdge(workflowId: string, input: CreateEdgeInput): Promi
     source: records[0].get("source") as string,
     target: records[0].get("target") as string,
   };
+}
+
+export async function updateNodePosition(
+  workflowId: string,
+  nodeId: string,
+  input: UpdateNodePositionInput,
+): Promise<WorkflowNode> {
+  const { records } = await driver.executeQuery(
+    `MATCH (n:WorkflowNode { id: $nodeId, workflowId: $workflowId })
+     SET n.positionX = $positionX, n.positionY = $positionY
+     RETURN n`,
+    {
+      workflowId,
+      nodeId,
+      positionX: input.position.x,
+      positionY: input.position.y,
+    },
+  );
+
+  if (records.length === 0) {
+    throw new HttpError(404, `Node ${nodeId} not found in workflow ${workflowId}`);
+  }
+
+  return toWorkflowNode(records[0].get("n").properties);
 }

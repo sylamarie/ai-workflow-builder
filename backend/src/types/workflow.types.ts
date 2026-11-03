@@ -50,6 +50,10 @@ export interface CreateEdgeInput {
   targetId: string;
 }
 
+export interface UpdateNodePositionInput {
+  position: { x: number; y: number };
+}
+
 export interface StepLogEntry {
   nodeId: string;
   type: string;

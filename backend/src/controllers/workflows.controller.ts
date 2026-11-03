@@ -34,8 +34,17 @@ export const addEdge = asyncHandler(async (req, res) => {
   res.status(201).json(edge);
 });
 
+export const updateNodePosition = asyncHandler(async (req, res) => {
+  const node = await workflowService.updateNodePosition(
+    req.params.id as string,
+    req.params.nodeId as string,
+    req.body,
+  );
+  res.status(200).json(node);
+});
+
 export const runWorkflow = asyncHandler(async (req, res) => {
-  const result = await executionService.runWorkflow(req.params.id as string);
+  const result = await executionService.runWorkflow(req.params.id as string, req.body ?? {});
   res.status(200).json(result);
 });
 
