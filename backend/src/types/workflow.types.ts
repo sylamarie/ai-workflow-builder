@@ -49,3 +49,27 @@ export interface CreateEdgeInput {
   sourceId: string;
   targetId: string;
 }
+
+export interface StepLogEntry {
+  nodeId: string;
+  type: string;
+  label: string;
+  status: "success" | "error";
+  output?: unknown;
+  error?: string;
+  startedAt: string;
+  finishedAt: string;
+}
+
+export interface RunResult {
+  workflowId: string;
+  status: "success" | "error";
+  steps: StepLogEntry[];
+}
+
+export type StepContext = Record<string, unknown>;
+
+export type StepHandler = (
+  config: Record<string, unknown>,
+  context: StepContext,
+) => Promise<unknown>;

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import * as executionService from "../services/execution.service.js";
 import * as workflowService from "../services/workflow.service.js";
 
 function asyncHandler(fn: (req: Request, res: Response) => Promise<void>) {
@@ -30,4 +31,9 @@ export const addNode = asyncHandler(async (req, res) => {
 export const addEdge = asyncHandler(async (req, res) => {
   const edge = await workflowService.addEdge(req.params.id as string, req.body);
   res.status(201).json(edge);
+});
+
+export const runWorkflow = asyncHandler(async (req, res) => {
+  const result = await executionService.runWorkflow(req.params.id as string);
+  res.status(200).json(result);
 });
