@@ -24,3 +24,28 @@ export async function classifyText(text: string, categories: string[]): Promise<
 
   return completion.choices[0]?.message?.content?.trim() ?? "unknown";
 }
+
+export interface GroqChatMessage {
+  role: "system" | "user";
+  content: string;
+}
+
+export async function generateWorkflowCompletion(
+  messages: GroqChatMessage[],
+  jsonSchema: Record<string, unknown>,
+  maxTokens: number,
+  temperature: number,
+): Promise<string> {
+  const completion = await groq.chat.completions.create({
+    model: GROQ_MODEL,
+    messages,
+    max_tokens: maxTokens,
+    temperature,
+    response_format: {
+      type: "json_schema",
+      json_schema: { name: "workflow_generation_response", schema: jsonSchema },
+    },
+  });
+
+  return completion.choices[0]?.message?.content ?? "";
+}

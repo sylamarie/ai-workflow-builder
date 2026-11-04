@@ -1,4 +1,5 @@
 import type {
+  GenerateWorkflowResult,
   NodeCategory,
   RunResult,
   Workflow,
@@ -72,4 +73,8 @@ export function runWorkflow(
   context: Record<string, unknown> = {},
 ): Promise<RunResult> {
   return request(`/${workflowId}/run`, { method: "POST", body: JSON.stringify(context) });
+}
+
+export function generateWorkflow(description: string): Promise<GenerateWorkflowResult> {
+  return request("/generate", { method: "POST", body: JSON.stringify({ description }) });
 }

@@ -76,6 +76,41 @@ from Neo4j → walks trigger → NEXT → NEXT ... → each step runs through it
 - **Webhook protected by a shared-secret header**, checked before the workflow runs, not after —
   since the webhook is a public URL that triggers real (metered) AI API calls once deployed.
 
+## AI Workflow Generation ("Describe it, AI builds it")
+
+Beyond the single AI-classify step, the builder itself can generate a workflow for you: describe
+an automation in plain English, and AI designs the actual node/connection graph — the same
+capability neither n8n nor Zapier offer as a core, built-in feature.
+
+**Example:** type *"When someone submits a complaint, classify it as urgent or normal, then log
+the result."* and it generates a 3-node chain — a Webhook Trigger → an AI Classify step (categories
+`urgent`/`normal`) → a Log step — shown on the canvas as a dashed, amber **preview**. Nothing is
+saved yet: review it, drag nodes to reposition if you like, then click **Save Generated Workflow**
+(or **Discard**). Saving reuses the exact same `addNode`/`addEdge` calls the palette uses — from
+Neo4j's point of view, a saved generated workflow is indistinguishable from one built by hand.
+
+**How it works:** the description is sent to the existing Groq client (same one used for the
+AI Classify step) with a strict JSON Schema response format. The raw response is then
+independently re-validated server-side with **Zod** — matched against the 5 supported step types'
+exact config shapes — and checked with a pure graph-validation function confirming the result is a
+single valid linear chain (exactly one trigger, no branches, no cycles, nothing orphaned). If the
+AI's response fails any of these checks, or the AI itself judges the request can't be built with
+the available step types (e.g. it needs branching/conditional logic), the app responds cleanly
+instead of crashing or saving something broken.
+
+**Limitations:**
+- Only the 5 existing step types can be generated (Manual/Webhook Trigger, Log, Wait, AI Classify);
+  no new step types or integrations.
+- Linear chains only — no branching/conditional logic, matching the rest of the app's v1 scope.
+- Generation never auto-saves, auto-activates, or auto-runs — an explicit Save is always required.
+- Capped at 8 nodes per generation and 500 characters per description, with basic rate-limiting
+  (10 requests / 10 minutes / IP) on the generation endpoint, since it triggers metered AI calls
+  and the app has no authentication layer.
+
+**Testing it locally:** no new environment variable is required — generation reuses the existing
+`GROQ_API_KEY`. Start both dev servers (see "Local development" below), open a workflow, and use
+the "Describe it, AI builds it" panel at the top of the canvas.
+
 ## Challenges
 
 - **Account defaults changed mid-build.** The Neo4j AuraDB instance used here doesn't use the
@@ -95,13 +130,17 @@ from Neo4j → walks trigger → NEXT → NEXT ... → each step runs through it
 - Persisted run history (currently a run's log is only returned in the HTTP response, not stored).
 - Swap/offer Claude as an AI provider option alongside Groq.
 - A "waking up the server…" loading state in the UI for the Render cold-start case.
+- Allow editing/deleting individual generated nodes before saving — the app has no node-delete or
+  config-editing UI yet for any workflow (manual or generated), so "review" of a generated workflow
+  currently means visual inspection plus drag-to-reposition, not full editing.
 
 ## Stack
 
 - **Backend:** Node + Express + TypeScript, deployed on Render
 - **Frontend:** React + `@xyflow/react` (drag-and-drop canvas), deployed on Vercel
 - **Database:** Neo4j AuraDB (free tier)
-- **AI:** Groq API (`groq-sdk`)
+- **AI:** Groq API (`groq-sdk`), Zod for response validation, `express-rate-limit` for abuse protection
+- **Testing:** Vitest (backend)
 
 ## Local development
 
@@ -111,6 +150,7 @@ cd backend
 npm install
 cp .env.example .env   # fill in your own Neo4j AuraDB + Groq credentials
 npm run dev             # http://localhost:3001
+npm test                 # runs the backend test suite (Groq/Neo4j mocked, no live calls)
 
 # Frontend (separate terminal)
 cd frontend

@@ -57,6 +57,8 @@ export interface StepTypeOption {
   defaultConfig: Record<string, unknown>;
 }
 
+// Kept in sync by hand with backend/src/ai/supportedStepTypes.ts — the AI workflow
+// generator's schema/prompt use the same 5 step types. Update both if you add a step type.
 export const STEP_TYPE_OPTIONS: StepTypeOption[] = [
   { category: "trigger", type: "trigger.manual", label: "Manual Trigger", defaultConfig: {} },
   { category: "trigger", type: "trigger.webhook", label: "Webhook Trigger", defaultConfig: {} },
@@ -74,3 +76,20 @@ export const STEP_TYPE_OPTIONS: StepTypeOption[] = [
     defaultConfig: { categories: ["positive", "negative", "neutral"] },
   },
 ];
+
+export interface GeneratedNode {
+  tempId: string;
+  category: NodeCategory;
+  type: string;
+  label: string;
+  config: Record<string, unknown>;
+}
+
+export interface GeneratedEdge {
+  sourceTempId: string;
+  targetTempId: string;
+}
+
+export type GenerateWorkflowResult =
+  | { status: "ok"; workflow: { nodes: GeneratedNode[]; edges: GeneratedEdge[] } }
+  | { status: "unsupported"; reason: string };

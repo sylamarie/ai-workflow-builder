@@ -139,3 +139,69 @@ button:hover {
 .error {
   color: #b91c1c;
 }
+
+.generate-panel {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.generate-panel-heading {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.generate-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.generate-panel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.char-counter {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.generate-unsupported {
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.generate-success {
+  color: #166534;
+  margin-top: 8px;
+}
+
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+}
+
+.preview-actions span {
+  flex: 1;
+  font-size: 13px;
+  color: #92400e;
+}
